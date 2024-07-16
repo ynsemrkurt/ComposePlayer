@@ -1,56 +1,43 @@
-package com.example.composeplayer
+package com.plcoding.videoplayercompose
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FileOpen
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.media3.ui.PlayerView
-import com.example.composeplayer.ui.theme.ComposePlayerTheme
+import com.plcoding.videoplayercompose.ui.theme.VideoPlayerComposeTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
-            ComposePlayerTheme {
+            VideoPlayerComposeTheme {
                 val viewModel = hiltViewModel<MainViewModel>()
                 val videoItems by viewModel.videoItems.collectAsState()
                 val selectVideoLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.GetContent(),
                     onResult = { uri ->
-                        uri?.let { viewModel::addVideoUri }
+                        uri?.let(viewModel::addVideoUri)
                     }
                 )
                 var lifecycle by remember {
@@ -62,13 +49,16 @@ class MainActivity : ComponentActivity() {
                         lifecycle = event
                     }
                     lifecycleOwner.lifecycle.addObserver(observer)
+
                     onDispose {
                         lifecycleOwner.lifecycle.removeObserver(observer)
                     }
                 }
 
                 Column(
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
                 ) {
                     AndroidView(
                         factory = { context ->
@@ -82,16 +72,14 @@ class MainActivity : ComponentActivity() {
                                     it.onPause()
                                     it.player?.pause()
                                 }
-
                                 Lifecycle.Event.ON_RESUME -> {
                                     it.onResume()
                                 }
-
                                 else -> Unit
                             }
                         },
                         modifier = Modifier
-                            .fillMaxSize()
+                            .fillMaxWidth()
                             .aspectRatio(16 / 9f)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -100,7 +88,7 @@ class MainActivity : ComponentActivity() {
                     }) {
                         Icon(
                             imageVector = Icons.Default.FileOpen,
-                            contentDescription = "Add Video"
+                            contentDescription = "Select video"
                         )
                     }
                     Spacer(modifier = Modifier.height(16.dp))

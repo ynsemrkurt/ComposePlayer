@@ -1,4 +1,4 @@
-package com.example.composeplayer
+package com.plcoding.videoplayercompose
 
 import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
@@ -14,18 +14,19 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val state: SavedStateHandle,
+    private val savedStateHandle: SavedStateHandle,
     val player: Player,
     private val metaDataReader: MetaDataReader
-) : ViewModel() {
-    private val videoUri = state.getStateFlow("videoUri", emptyList<Uri>())
+): ViewModel() {
 
-    val videoItems = videoUri.map { uris ->
+    private val videoUris = savedStateHandle.getStateFlow("videoUris", emptyList<Uri>())
+
+    val videoItems = videoUris.map { uris ->
         uris.map { uri ->
             VideoItem(
                 contentUri = uri,
                 mediaItem = MediaItem.fromUri(uri),
-                name = metaDataReader.getMetaDataFromUri(uri)?.fileName ?: "Video"
+                name = metaDataReader.getMetaDataFromUri(uri)?.fileName ?: "No name"
             )
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -35,7 +36,7 @@ class MainViewModel @Inject constructor(
     }
 
     fun addVideoUri(uri: Uri) {
-        state["videoUri"] = videoUri.value + uri
+        savedStateHandle["videoUris"] = videoUris.value + uri
         player.addMediaItem(MediaItem.fromUri(uri))
     }
 

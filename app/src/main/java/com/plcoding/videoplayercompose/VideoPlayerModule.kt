@@ -1,4 +1,4 @@
-package com.example.composeplayer
+package com.plcoding.videoplayercompose
 
 import android.app.Application
 import androidx.media3.common.Player
@@ -16,7 +16,7 @@ object VideoPlayerModule {
     @Provides
     @ViewModelScoped
     fun provideVideoPlayer(app: Application): Player {
-        return  ExoPlayer.Builder(app)
+        return ExoPlayer.Builder(app)
             .build()
     }
 

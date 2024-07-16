@@ -1,4 +1,4 @@
-package com.example.composeplayer
+package com.plcoding.videoplayercompose
 
 import org.junit.Test
 
