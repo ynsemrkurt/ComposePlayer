@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("kotlin-kapt")
+    id("kotlin-parcelize")
+    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -83,4 +85,8 @@ dependencies {
 
     //Add ViewModel
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+}
+
+kapt {
+    correctErrorTypes = true
 }
