@@ -15,12 +15,12 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val state: SavedStateHandle,
-    private val player: Player,
+    val player: Player,
     private val metaDataReader: MetaDataReader
 ) : ViewModel() {
     private val videoUri = state.getStateFlow("videoUri", emptyList<Uri>())
 
-    private val videoItems = videoUri.map { uris ->
+    val videoItems = videoUri.map { uris ->
         uris.map { uri ->
             VideoItem(
                 contentUri = uri,
