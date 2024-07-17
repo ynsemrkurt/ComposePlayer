@@ -6,5 +6,5 @@ import androidx.media3.common.MediaItem
 data class VideoItem(
     val contentUri: Uri,
     val mediaItem: MediaItem,
-    val name: String
+    val name: String,
 )
