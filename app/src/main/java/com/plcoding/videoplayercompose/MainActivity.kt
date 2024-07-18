@@ -36,7 +36,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.media3.ui.PlayerView
-import coil.compose.rememberImagePainter
+import coil.compose.rememberAsyncImagePainter
 import com.plcoding.videoplayercompose.ui.theme.VideoPlayerComposeTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -149,7 +149,7 @@ fun VideoListItem(item: VideoItem, onVideoClick: () -> Unit) {
     ) {
         item.thumbnailUri?.let { thumbnailUri ->
             Image(
-                painter = rememberImagePainter(data = thumbnailUri),
+                painter = rememberAsyncImagePainter(model = thumbnailUri),
                 contentDescription = item.name,
                 modifier = Modifier
                     .height(100.dp)

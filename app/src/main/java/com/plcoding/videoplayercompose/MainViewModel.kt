@@ -85,7 +85,6 @@ class MainViewModel @Inject constructor(
         cursor?.use { cursor1 ->
             val idColumn = cursor1.getColumnIndexOrThrow(MediaStore.Video.Media._ID)
             val nameColumn = cursor1.getColumnIndexOrThrow(MediaStore.Video.Media.DISPLAY_NAME)
-            val durationColumn = cursor1.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION)
 
             while (cursor1.moveToNext()) {
                 val id = cursor1.getLong(idColumn)
@@ -95,7 +94,6 @@ class MainViewModel @Inject constructor(
                 )
 
                 val name = cursor1.getString(nameColumn)
-                val duration = cursor1.getLong(durationColumn)
 
                 videos.add(
                     VideoItem(
