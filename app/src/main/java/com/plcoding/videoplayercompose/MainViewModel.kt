@@ -35,6 +35,15 @@ class MainViewModel @Inject constructor(
     private val _videoUris = MutableStateFlow<List<Uri>>(emptyList())
     private val videoUris: StateFlow<List<Uri>> = _videoUris
 
+    private val _currentVideoThumbnail = MutableStateFlow<String?>(null)
+    val currentVideoThumbnail: StateFlow<String?> = _currentVideoThumbnail
+
+    private val _isPlaying = MutableStateFlow(false)
+    val isPlaying: StateFlow<Boolean> = _isPlaying
+
+    private val _currentContentUri = MutableStateFlow<Uri?>(null)
+    val currentContentUri: StateFlow<Uri?> = _currentContentUri
+
     val videoItems = videoUris.map { uris ->
         uris.map { uri ->
             VideoItem(
@@ -58,7 +67,18 @@ class MainViewModel @Inject constructor(
         val mediaItemToPlay = videoItems.value.find { it.contentUri == uri }?.mediaItem
         if (mediaItemToPlay != null) {
             player.setMediaItem(mediaItemToPlay)
+            player.prepare()
+            player.play()
+            _isPlaying.value = true
+            _currentVideoThumbnail.value = null // Oynatmaya başladığında thumbnail'ı gizle
         }
+    }
+
+    fun showThumbnail(uri: Uri) {
+        val thumbnailUri = videoItems.value.find { it.contentUri == uri }?.thumbnailUri
+        _currentVideoThumbnail.value = thumbnailUri
+        _currentContentUri.value = uri // Tıklanan videonun URI'sini güncelle
+        _isPlaying.value = false
     }
 
     fun loadAllVideos() {
