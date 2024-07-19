@@ -19,6 +19,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileOutputStream
 import javax.inject.Inject
 
 @HiltViewModel
@@ -105,21 +107,19 @@ class MainViewModel @Inject constructor(
                 )
             }
         }
-
         videos
     }
 
     private fun loadThumbnail(uri: Uri): String? {
         return try {
-            val size = Size(400, 400)
+            val size = Size(200, 200)
             val bitmap: Bitmap = contentResolver.loadThumbnail(uri, size, null)
-            val path = MediaStore.Images.Media.insertImage(
-                getApplication<Application>().contentResolver,
-                bitmap,
-                uri.toString(),
-                null
-            )
-            Uri.parse(path).toString()
+            val cacheDir = getApplication<Application>().cacheDir
+            val tempFile = File.createTempFile("thumb_", ".jpg", cacheDir)
+            FileOutputStream(tempFile).use { out ->
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
+            }
+            Uri.fromFile(tempFile).toString()
         } catch (e: Exception) {
             e.printStackTrace()
             null
