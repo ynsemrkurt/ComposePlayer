@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -31,6 +33,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
@@ -162,14 +165,18 @@ fun VideoListItem(item: VideoItem, onVideoClick: () -> Unit) {
             .clickable(onClick = onVideoClick)
     ) {
         item.thumbnailUri?.let { thumbnailUri ->
-            Image(
-                painter = rememberAsyncImagePainter(model = thumbnailUri),
-                contentDescription = item.name,
-                modifier = Modifier
-                    .height(100.dp)
-                    .fillMaxWidth(),
-                contentScale = ContentScale.Crop
-            )
+            Card(
+                border = BorderStroke(0.8.dp, Color.White)
+            ){
+                Image(
+                    painter = rememberAsyncImagePainter(model = thumbnailUri),
+                    contentDescription = item.name,
+                    modifier = Modifier
+                        .height(200.dp)
+                        .fillMaxWidth(),
+                    contentScale = ContentScale.Crop
+                )
+            }
         }
     }
 }

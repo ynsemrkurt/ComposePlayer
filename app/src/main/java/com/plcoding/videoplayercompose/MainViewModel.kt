@@ -112,7 +112,7 @@ class MainViewModel @Inject constructor(
 
     private fun loadThumbnail(uri: Uri): String? {
         return try {
-            val size = Size(200, 200)
+            val size = Size(400, 400)
             val bitmap: Bitmap = contentResolver.loadThumbnail(uri, size, null)
             val cacheDir = getApplication<Application>().cacheDir
             val tempFile = File.createTempFile("thumb_", ".jpg", cacheDir)
