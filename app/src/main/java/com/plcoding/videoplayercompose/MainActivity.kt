@@ -124,8 +124,10 @@ fun VideoPlayerContent() {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        val text = if (videoItems.isEmpty()) "No videos found" else "Videos found: ${videoItems.size}"
-        VideoStatusText(text)
+        videoItems.let{
+            val text = if (videoItems.isEmpty()) "Loading videos..." else "Videos found: ${videoItems.size}"
+            VideoStatusText(text)
+        }
 
         VideoList(videoItems = videoItems, viewModel = viewModel)
     }
