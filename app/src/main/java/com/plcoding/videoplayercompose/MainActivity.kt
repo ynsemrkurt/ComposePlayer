@@ -10,15 +10,18 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -96,7 +99,10 @@ fun VideoPlayerContent() {
     Column(modifier = Modifier.fillMaxSize()) {
         PlayerViewContainer(viewModel = viewModel, lifecycle = lifecycle)
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
+
+        val text = if (videoItems.isEmpty()) "No videos found" else "Videos found: ${videoItems.size}"
+        VideoStatusText(text)
 
         VideoList(videoItems = videoItems, viewModel = viewModel)
     }
@@ -128,6 +134,14 @@ fun PlayerViewContainer(viewModel: MainViewModel, lifecycle: Lifecycle.Event) {
 }
 
 @Composable
+fun VideoStatusText(text: String) {
+    Row {
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(text = text)
+    }
+}
+
+@Composable
 fun VideoList(videoItems: List<VideoItem>, viewModel: MainViewModel) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 128.dp),
@@ -144,7 +158,7 @@ fun VideoListItem(item: VideoItem, onVideoClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
+            .padding(3.dp)
             .clickable(onClick = onVideoClick)
     ) {
         item.thumbnailUri?.let { thumbnailUri ->
