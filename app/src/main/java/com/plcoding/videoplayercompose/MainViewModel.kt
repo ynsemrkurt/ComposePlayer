@@ -12,11 +12,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -32,18 +28,23 @@ class MainViewModel @Inject constructor(
 
     private val contentResolver: ContentResolver = application.contentResolver
 
+    // Videoların URI'lerini tutar
     private val _videoUris = MutableStateFlow<List<Uri>>(emptyList())
     private val videoUris: StateFlow<List<Uri>> = _videoUris
 
+    // Geçerli video küçük resmini tutar
     private val _currentVideoThumbnail = MutableStateFlow<String?>(null)
     val currentVideoThumbnail: StateFlow<String?> = _currentVideoThumbnail
 
+    // Oynatma durumunu tutar
     private val _isPlaying = MutableStateFlow(false)
     val isPlaying: StateFlow<Boolean> = _isPlaying
 
+    // Geçerli içerik URI'sini tutar
     private val _currentContentUri = MutableStateFlow<Uri?>(null)
     val currentContentUri: StateFlow<Uri?> = _currentContentUri
 
+    // Video öğelerini URI'lerden oluşturur
     val videoItems = videoUris.map { uris ->
         uris.map { uri ->
             VideoItem(
@@ -60,9 +61,10 @@ class MainViewModel @Inject constructor(
     )
 
     init {
-        player.prepare()
+        player.prepare() // Player'ı hazırlayın
     }
 
+    // Video oynatma fonksiyonu
     fun playVideo(uri: Uri) {
         val mediaItemToPlay = videoItems.value.find { it.contentUri == uri }?.mediaItem
         if (mediaItemToPlay != null) {
@@ -70,10 +72,11 @@ class MainViewModel @Inject constructor(
             player.prepare()
             player.play()
             _isPlaying.value = true
-            _currentVideoThumbnail.value = null // Oynatmaya başladığında thumbnail'ı gizle
+            _currentVideoThumbnail.value = null // Oynatmaya başladığında küçük resmi gizle
         }
     }
 
+    // Küçük resmi göster fonksiyonu
     fun showThumbnail(uri: Uri) {
         player.pause()
         val thumbnailUri = videoItems.value.find { it.contentUri == uri }?.thumbnailUri
@@ -82,13 +85,15 @@ class MainViewModel @Inject constructor(
         _isPlaying.value = false
     }
 
+    // Tüm videoları yükle fonksiyonu
     fun loadAllVideos() {
         viewModelScope.launch {
             val videos = queryAllVideos()
-            _videoUris.value = videos.map { it.contentUri } // Set _videoUris with List<Uri>
+            _videoUris.value = videos.map { it.contentUri } // _videoUris'i List<Uri> ile ayarla
         }
     }
 
+    // Tüm videoları sorgula fonksiyonu
     private suspend fun queryAllVideos(): List<VideoItem> = withContext(Dispatchers.IO) {
         val videos = mutableListOf<VideoItem>()
         val projection = arrayOf(
@@ -131,6 +136,7 @@ class MainViewModel @Inject constructor(
         videos
     }
 
+    // Küçük resmi yükle fonksiyonu
     private fun loadThumbnail(uri: Uri): String? {
         return try {
             val size = Size(400, 400)
@@ -149,6 +155,6 @@ class MainViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        player.release()
+        player.release() // Player'ı serbest bırak
     }
 }
