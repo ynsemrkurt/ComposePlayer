@@ -75,6 +75,7 @@ class MainViewModel @Inject constructor(
     }
 
     fun showThumbnail(uri: Uri) {
+        player.pause()
         val thumbnailUri = videoItems.value.find { it.contentUri == uri }?.thumbnailUri
         _currentVideoThumbnail.value = thumbnailUri
         _currentContentUri.value = uri // Tıklanan videonun URI'sini güncelle
