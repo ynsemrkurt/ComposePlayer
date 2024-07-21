@@ -124,8 +124,9 @@ fun VideoPlayerContent() {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        videoItems.let{
-            val text = if (videoItems.isEmpty()) "Loading videos..." else "Videos found: ${videoItems.size}"
+        videoItems.let {
+            val text =
+                if (videoItems.isEmpty()) "Loading videos..." else "Videos found: ${videoItems.size}"
             VideoStatusText(text)
         }
 
@@ -134,10 +135,17 @@ fun VideoPlayerContent() {
 }
 
 @Composable
-fun PlayerViewContainer(viewModel: MainViewModel, lifecycle: Lifecycle.Event, thumbnailUri: String?, isPlaying: Boolean, contentUri: Uri?) {
-    Box(modifier = Modifier
-        .fillMaxWidth()
-        .aspectRatio(16 / 9f)
+fun PlayerViewContainer(
+    viewModel: MainViewModel,
+    lifecycle: Lifecycle.Event,
+    thumbnailUri: String?,
+    isPlaying: Boolean,
+    contentUri: Uri?
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(16 / 9f)
     ) {
         AndroidView(
             factory = { context ->
