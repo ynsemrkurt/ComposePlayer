@@ -1,9 +1,17 @@
 package com.plcoding.videoplayercompose
 
 import android.Manifest
+import android.app.PendingIntent
+import android.app.PictureInPictureParams
+import android.app.RemoteAction
+import android.content.Intent
+import android.content.res.Configuration
+import android.graphics.drawable.Icon
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.util.Rational
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -65,54 +73,105 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             VideoPlayerComposeTheme {
-                VideoPlayerContent() // VideoPlayerContent bileşeni çağrılır.
+                VideoPlayerContent()
             }
         }
     }
+
+    override fun enterPictureInPictureMode() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val aspectRatio = Rational(16, 9)
+            val pipParams = PictureInPictureParams.Builder()
+                .setAspectRatio(aspectRatio)
+                .setActions(listOf(createPreviousAction(), createNextAction()))
+                .build()
+            enterPictureInPictureMode(pipParams)
+        } else {
+            Toast.makeText(this, "PiP modu desteklenmiyor", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun createPreviousAction(): RemoteAction {
+        val intent = PendingIntent.getBroadcast(
+            this,
+            0,
+            Intent(ACTION_PREVIOUS),
+            PendingIntent.FLAG_IMMUTABLE
+        )
+        return RemoteAction(
+            Icon.createWithResource(this, android.R.drawable.ic_media_previous),
+            "Önceki",
+            "Önceki",
+            intent
+        )
+    }
+
+    private fun createNextAction(): RemoteAction {
+        val intent = PendingIntent.getBroadcast(
+            this,
+            1,
+            Intent(ACTION_NEXT),
+            PendingIntent.FLAG_IMMUTABLE
+        )
+        return RemoteAction(
+            Icon.createWithResource(this, android.R.drawable.ic_media_next),
+            "Sonraki",
+            "Sonraki",
+            intent
+        )
+    }
+
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        enterPictureInPictureMode()
+    }
+
+    override fun onPictureInPictureModeChanged(
+        isInPictureInPictureMode: Boolean,
+        newConfig: Configuration?
+    ) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+    }
+
+    companion object {
+        const val ACTION_PREVIOUS = "com.plcoding.videoplayercompose.ACTION_PREVIOUS"
+        const val ACTION_NEXT = "com.plcoding.videoplayercompose.ACTION_NEXT"
+    }
 }
 
-// VideoPlayerContent bileşeni, ana içeriği oluşturur.
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun VideoPlayerContent() {
-    // ViewModel'i alır.
     val viewModel: MainViewModel = hiltViewModel()
-    // Durum değerlerini toplar.
     val videoItems by viewModel.videoItems.collectAsState()
     val currentVideoThumbnail by viewModel.currentVideoThumbnail.collectAsState()
     val isPlaying by viewModel.isPlaying.collectAsState()
     val currentContentUri by viewModel.currentContentUri.collectAsState()
 
-    // İzinler için bir başlatıcı oluşturur.
     val requestPermissions = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        // İzinlerin verilip verilmediğini kontrol eder.
         val granted = permissions.entries.all { it.value }
         if (granted) {
-            viewModel.loadAllVideos() // Tüm videoları yükler.
+            viewModel.loadAllVideos()
         }
     }
 
-    // İzinler için bir etkilişim başlatır.
     LaunchedEffect(true) {
         requestPermissions.launch(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                arrayOf(Manifest.permission.READ_MEDIA_VIDEO) // Android 13 ve üzeri için.
+                arrayOf(Manifest.permission.READ_MEDIA_VIDEO)
             } else {
-                arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE) // Daha düşük sürümler için.
+                arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
             }
         )
     }
 
-    // LifecycleOwner'ı alır.
     val lifecycleOwner = LocalLifecycleOwner.current
-    // Lifecycle durumu için bir state hatırlar.
     var lifecycle by remember(lifecycleOwner) {
         mutableStateOf(Lifecycle.Event.ON_CREATE)
     }
 
-    // Lifecycle değişikliklerini gözlemlemek için bir DisposableEffect kullanır.
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             lifecycle = event
@@ -124,16 +183,14 @@ fun VideoPlayerContent() {
         }
     }
 
-    // Ana kolon düzenini oluşturur.
     Column(modifier = Modifier.fillMaxSize()) {
-        // Video oynatıcı bileşenini ekler.
         PlayerViewContainer(
             viewModel = viewModel,
             lifecycle = lifecycle,
             thumbnailUri = currentVideoThumbnail,
             isPlaying = isPlaying,
             contentUri = currentContentUri
-        ) // Boşluk ekler.
+        )
 
         Row(
             Modifier
@@ -150,13 +207,10 @@ fun VideoPlayerContent() {
             DropDownFilter(viewModel)
         }
 
-
-        // Video listesi bileşenini ekler.
         VideoList(videoItems = videoItems, viewModel = viewModel)
     }
 }
 
-// Video oynatıcı bileşeni.
 @Composable
 fun PlayerViewContainer(
     viewModel: MainViewModel,
@@ -191,7 +245,6 @@ fun PlayerViewContainer(
             modifier = Modifier.fillMaxSize()
         )
 
-        // Eğer oynatma yoksa ve küçük resim ve içerik URI'si varsa, küçük resmi gösterir.
         if (!isPlaying && thumbnailUri != null && contentUri != null) {
             Image(
                 painter = rememberAsyncImagePainter(model = thumbnailUri),
@@ -203,7 +256,7 @@ fun PlayerViewContainer(
                 modifier = Modifier
                     .fillMaxSize()
                     .clickable {
-                        viewModel.playVideo(contentUri) // Videoyu oynatır.
+                        viewModel.playVideo(contentUri)
                     },
                 contentAlignment = Alignment.Center
             ) {
@@ -221,7 +274,6 @@ fun PlayerViewContainer(
     }
 }
 
-// Video listesi bileşeni.
 @Composable
 fun VideoList(videoItems: List<VideoItem>, viewModel: MainViewModel) {
     LazyVerticalGrid(
@@ -234,7 +286,6 @@ fun VideoList(videoItems: List<VideoItem>, viewModel: MainViewModel) {
     }
 }
 
-// Video liste öğesi bileşeni.
 @Composable
 fun VideoListItem(item: VideoItem, onVideoClick: () -> Unit) {
     Column(
@@ -259,8 +310,6 @@ fun VideoListItem(item: VideoItem, onVideoClick: () -> Unit) {
                             .fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
-
-                    // Süre bilgisini sağ alt köşede göster
                     item.duration.let { durationMillis ->
                         val durationText = formatDuration(durationMillis)
                         Box(
@@ -283,11 +332,10 @@ fun VideoListItem(item: VideoItem, onVideoClick: () -> Unit) {
     }
 }
 
-
 @Composable
 fun DropDownFilter(viewModel: MainViewModel) {
     var expanded by remember { mutableStateOf(false) }
-    var selectedFilter by remember { mutableStateOf("date desc") } // Varsayılan olarak en yeni videolar
+    var selectedFilter by remember { mutableStateOf("date desc") }
 
     Box {
         IconButton(onClick = { expanded = !expanded }) {
@@ -313,7 +361,7 @@ fun DropDownFilter(viewModel: MainViewModel) {
             filters.forEach { (filterKey, filterLabel) ->
                 DropdownMenuItem(onClick = {
                     selectedFilter = filterKey
-                    viewModel.loadAllVideos(filterKey) // Seçilen filtreyi uygula
+                    viewModel.loadAllVideos(filterKey)
                     expanded = false
                 }) {
                     Text(text = filterLabel)
