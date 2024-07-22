@@ -7,6 +7,7 @@ data class VideoItem(
     val contentUri: Uri,
     val mediaItem: MediaItem,
     val name: String,
-    val thumbnailUri: String? = null
+    val thumbnailUri: String? = null,
+    val duration: Long,
 )
 

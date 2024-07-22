@@ -2,7 +2,9 @@ package com.plcoding.videoplayercompose
 
 import android.app.Application
 import android.content.ContentResolver
+import android.content.Context
 import android.graphics.Bitmap
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.provider.MediaStore
 import android.util.Size
@@ -55,7 +57,8 @@ class MainViewModel @Inject constructor(
                 contentUri = uri,
                 mediaItem = MediaItem.fromUri(uri),
                 name = metaDataReader.getMetaDataFromUri(uri)?.fileName ?: "No name",
-                thumbnailUri = loadThumbnail(uri)
+                thumbnailUri = loadThumbnail(uri),
+                duration = getVideoDuration(getApplication(), uri)
             )
         }
     }.stateIn(
@@ -98,57 +101,59 @@ class MainViewModel @Inject constructor(
     }
 
     // Tüm videoları sorgula fonksiyonu
-    private suspend fun queryAllVideos(filterStatus: String): List<VideoItem> = withContext(Dispatchers.IO) {
-        val filter = when(filterStatus){
-            "date asc" -> "${MediaStore.Video.Media.DATE_ADDED} ASC"
-            "date desc" -> "${MediaStore.Video.Media.DATE_ADDED} DESC"
-            "duration asc" -> "${MediaStore.Video.Media.DURATION} ASC"
-            "duration desc" -> "${MediaStore.Video.Media.DURATION} DESC"
-            "name asc" -> "${MediaStore.Video.Media.DISPLAY_NAME} ASC"
-            "name desc" -> "${MediaStore.Video.Media.DISPLAY_NAME} DESC"
-            else -> null
-        }
-
-        val videos = mutableListOf<VideoItem>()
-        val projection = arrayOf(
-            MediaStore.Video.Media._ID,
-            MediaStore.Video.Media.DISPLAY_NAME,
-            MediaStore.Video.Media.DURATION
-        )
-
-        val cursor = contentResolver.query(
-            MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-            projection,
-            null,
-            null,
-            filter
-        )
-
-        cursor?.use { cursor1 ->
-            val idColumn = cursor1.getColumnIndexOrThrow(MediaStore.Video.Media._ID)
-            val nameColumn = cursor1.getColumnIndexOrThrow(MediaStore.Video.Media.DISPLAY_NAME)
-
-            while (cursor1.moveToNext()) {
-                val id = cursor1.getLong(idColumn)
-                val contentUri = Uri.withAppendedPath(
-                    MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-                    id.toString()
-                )
-
-                val name = cursor1.getString(nameColumn)
-
-                videos.add(
-                    VideoItem(
-                        contentUri = contentUri,
-                        mediaItem = MediaItem.fromUri(contentUri),
-                        name = name,
-                        thumbnailUri = loadThumbnail(contentUri)
-                    )
-                )
+    private suspend fun queryAllVideos(filterStatus: String): List<VideoItem> =
+        withContext(Dispatchers.IO) {
+            val filter = when (filterStatus) {
+                "date asc" -> "${MediaStore.Video.Media.DATE_ADDED} ASC"
+                "date desc" -> "${MediaStore.Video.Media.DATE_ADDED} DESC"
+                "duration asc" -> "${MediaStore.Video.Media.DURATION} ASC"
+                "duration desc" -> "${MediaStore.Video.Media.DURATION} DESC"
+                "name asc" -> "${MediaStore.Video.Media.DISPLAY_NAME} ASC"
+                "name desc" -> "${MediaStore.Video.Media.DISPLAY_NAME} DESC"
+                else -> null
             }
+
+            val videos = mutableListOf<VideoItem>()
+            val projection = arrayOf(
+                MediaStore.Video.Media._ID,
+                MediaStore.Video.Media.DISPLAY_NAME,
+                MediaStore.Video.Media.DURATION
+            )
+
+            val cursor = contentResolver.query(
+                MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                projection,
+                null,
+                null,
+                filter
+            )
+
+            cursor?.use { cursor1 ->
+                val idColumn = cursor1.getColumnIndexOrThrow(MediaStore.Video.Media._ID)
+                val nameColumn = cursor1.getColumnIndexOrThrow(MediaStore.Video.Media.DISPLAY_NAME)
+
+                while (cursor1.moveToNext()) {
+                    val id = cursor1.getLong(idColumn)
+                    val contentUri = Uri.withAppendedPath(
+                        MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                        id.toString()
+                    )
+
+                    val name = cursor1.getString(nameColumn)
+
+                    videos.add(
+                        VideoItem(
+                            contentUri = contentUri,
+                            mediaItem = MediaItem.fromUri(contentUri),
+                            name = name,
+                            thumbnailUri = loadThumbnail(contentUri),
+                            duration = getVideoDuration(getApplication(), contentUri)
+                        )
+                    )
+                }
+            }
+            videos
         }
-        videos
-    }
 
     // Küçük resmi yükle fonksiyonu
     private fun loadThumbnail(uri: Uri): String? {
@@ -165,6 +170,14 @@ class MainViewModel @Inject constructor(
             e.printStackTrace()
             null
         }
+    }
+
+    private fun getVideoDuration(context: Context, videoUri: Uri): Long {
+        val retriever = MediaMetadataRetriever()
+        retriever.setDataSource(context, videoUri)
+        val durationStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+        retriever.release()
+        return durationStr?.toLongOrNull() ?: 0L
     }
 
     override fun onCleared() {
