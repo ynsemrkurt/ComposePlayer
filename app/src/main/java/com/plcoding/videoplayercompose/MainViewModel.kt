@@ -90,15 +90,25 @@ class MainViewModel @Inject constructor(
     }
 
     // Tüm videoları yükle fonksiyonu
-    fun loadAllVideos() {
+    fun loadAllVideos(filterStatus: String = "date desc") {
         viewModelScope.launch {
-            val videos = queryAllVideos()
+            val videos = queryAllVideos(filterStatus)
             _videoUris.value = videos.map { it.contentUri } // _videoUris'i List<Uri> ile ayarla
         }
     }
 
     // Tüm videoları sorgula fonksiyonu
-    private suspend fun queryAllVideos(): List<VideoItem> = withContext(Dispatchers.IO) {
+    private suspend fun queryAllVideos(filterStatus: String): List<VideoItem> = withContext(Dispatchers.IO) {
+        val filter = when(filterStatus){
+            "date asc" -> "${MediaStore.Video.Media.DATE_ADDED} ASC"
+            "date desc" -> "${MediaStore.Video.Media.DATE_ADDED} DESC"
+            "duration asc" -> "${MediaStore.Video.Media.DURATION} ASC"
+            "duration desc" -> "${MediaStore.Video.Media.DURATION} DESC"
+            "name asc" -> "${MediaStore.Video.Media.DISPLAY_NAME} ASC"
+            "name desc" -> "${MediaStore.Video.Media.DISPLAY_NAME} DESC"
+            else -> null
+        }
+
         val videos = mutableListOf<VideoItem>()
         val projection = arrayOf(
             MediaStore.Video.Media._ID,
@@ -111,7 +121,7 @@ class MainViewModel @Inject constructor(
             projection,
             null,
             null,
-            null
+            filter
         )
 
         cursor?.use { cursor1 ->
