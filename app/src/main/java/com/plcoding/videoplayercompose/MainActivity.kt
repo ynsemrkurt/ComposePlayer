@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -35,7 +34,6 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterAlt
-import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -138,7 +136,8 @@ fun VideoPlayerContent() {
         ) // Boşluk ekler.
 
         Row(
-            Modifier.fillMaxWidth()
+            Modifier
+                .fillMaxWidth()
                 .padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -248,18 +247,42 @@ fun VideoListItem(item: VideoItem, onVideoClick: () -> Unit) {
             Card(
                 border = BorderStroke(0.8.dp, Color.White)
             ) {
-                Image(
-                    painter = rememberAsyncImagePainter(model = thumbnailUri),
-                    contentDescription = item.name,
+                Box(
                     modifier = Modifier
                         .height(200.dp)
-                        .fillMaxWidth(),
-                    contentScale = ContentScale.Crop
-                )
+                        .fillMaxWidth()
+                ) {
+                    Image(
+                        painter = rememberAsyncImagePainter(model = thumbnailUri),
+                        contentDescription = item.name,
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+
+                    // Süre bilgisini sağ alt köşede göster
+                    item.duration.let { durationMillis ->
+                        val durationText = formatDuration(durationMillis)
+                        Box(
+                            modifier = Modifier
+                                .padding(4.dp)
+                                .align(Alignment.BottomEnd)
+                                .background(Color.Black.copy(alpha = 0.5f), shape = CircleShape)
+                                .padding(4.dp)
+                        ) {
+                            Text(
+                                text = durationText,
+                                color = Color.White,
+                                modifier = Modifier.padding(4.dp)
+                            )
+                        }
+                    }
+                }
             }
         }
     }
 }
+
 
 @Composable
 fun DropDownFilter(viewModel: MainViewModel) {
@@ -298,4 +321,10 @@ fun DropDownFilter(viewModel: MainViewModel) {
             }
         }
     }
+}
+
+fun formatDuration(durationMillis: Long): String {
+    val minutes = (durationMillis / 1000 / 60).toInt()
+    val seconds = (durationMillis / 1000 % 60).toInt()
+    return String.format("%02d:%02d", minutes, seconds)
 }
