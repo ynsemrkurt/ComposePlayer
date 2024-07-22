@@ -28,9 +28,14 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Card
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FilterAlt
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -130,16 +135,22 @@ fun VideoPlayerContent() {
             thumbnailUri = currentVideoThumbnail,
             isPlaying = isPlaying,
             contentUri = currentContentUri
-        )
+        ) // Boşluk ekler.
 
-        Spacer(modifier = Modifier.height(8.dp)) // Boşluk ekler.
-
-        // Video durumu metnini ekler.
-        videoItems.let {
-            val text =
-                if (videoItems.isEmpty()) "Loading videos..." else "Videos found: ${videoItems.size}"
-            VideoStatusText(text)
+        Row(
+            Modifier.fillMaxWidth()
+                .padding(horizontal = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            videoItems.let {
+                val text =
+                    if (videoItems.isEmpty()) "Loading videos..." else "Videos found: ${videoItems.size}"
+                Text(text)
+            }
+            Spacer(Modifier.weight(1f))
+            DropDownFilter(viewModel)
         }
+
 
         // Video listesi bileşenini ekler.
         VideoList(videoItems = videoItems, viewModel = viewModel)
@@ -211,15 +222,6 @@ fun PlayerViewContainer(
     }
 }
 
-// Video durumu metni bileşeni.
-@Composable
-fun VideoStatusText(text: String) {
-    Row {
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(text = text)
-    }
-}
-
 // Video listesi bileşeni.
 @Composable
 fun VideoList(videoItems: List<VideoItem>, viewModel: MainViewModel) {
@@ -254,6 +256,45 @@ fun VideoListItem(item: VideoItem, onVideoClick: () -> Unit) {
                         .fillMaxWidth(),
                     contentScale = ContentScale.Crop
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun DropDownFilter(viewModel: MainViewModel) {
+    var expanded by remember { mutableStateOf(false) }
+    var selectedFilter by remember { mutableStateOf("date desc") } // Varsayılan olarak en yeni videolar
+
+    Box {
+        IconButton(onClick = { expanded = !expanded }) {
+            Icon(
+                imageVector = Icons.Default.FilterAlt,
+                contentDescription = "Filter"
+            )
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            val filters = listOf(
+                "date asc" to "Date Added (Oldest First)",
+                "date desc" to "Date Added (Newest First)",
+                "duration asc" to "Duration (Shortest First)",
+                "duration desc" to "Duration (Longest First)",
+                "name asc" to "Name (A-Z)",
+                "name desc" to "Name (Z-A)"
+            )
+
+            filters.forEach { (filterKey, filterLabel) ->
+                DropdownMenuItem(onClick = {
+                    selectedFilter = filterKey
+                    viewModel.loadAllVideos(filterKey) // Seçilen filtreyi uygula
+                    expanded = false
+                }) {
+                    Text(text = filterLabel)
+                }
             }
         }
     }
