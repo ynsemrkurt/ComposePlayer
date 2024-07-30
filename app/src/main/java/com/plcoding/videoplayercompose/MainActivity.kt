@@ -5,16 +5,19 @@ import android.app.PendingIntent
 import android.app.PictureInPictureParams
 import android.app.RemoteAction
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.res.Configuration
 import android.graphics.drawable.Icon
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Rational
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -78,7 +81,17 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
+        // BroadcastReceiver Kaydı
+        val filter = IntentFilter().apply {
+            addAction(ACTION_PREVIOUS)
+            addAction(ACTION_PLAY)
+            addAction(ACTION_NEXT)
+        }
+        registerReceiver(PIPActionReceiver(), filter)
     }
+
+    val viewModel: MainViewModel by viewModels()
 
     @Deprecated("Deprecated in Java")
     override fun enterPictureInPictureMode() {
@@ -108,7 +121,7 @@ class MainActivity : ComponentActivity() {
     private fun createPlayAction(): RemoteAction {
         val intent = PendingIntent.getBroadcast(
             this,
-            0,
+            1,
             Intent(ACTION_PLAY),
             PendingIntent.FLAG_IMMUTABLE
         )
@@ -123,7 +136,7 @@ class MainActivity : ComponentActivity() {
     private fun createNextAction(): RemoteAction {
         val intent = PendingIntent.getBroadcast(
             this,
-            1,
+            2,
             Intent(ACTION_NEXT),
             PendingIntent.FLAG_IMMUTABLE
         )
@@ -133,6 +146,17 @@ class MainActivity : ComponentActivity() {
             "Next",
             intent
         )
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        intent?.let {
+            when (it.action) {
+                ACTION_PREVIOUS -> Toast.makeText(this, "Previous", Toast.LENGTH_SHORT).show()
+                ACTION_PLAY -> viewModel.player.play()
+                ACTION_NEXT -> Toast.makeText(this, "Next", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     override fun onUserLeaveHint() {
