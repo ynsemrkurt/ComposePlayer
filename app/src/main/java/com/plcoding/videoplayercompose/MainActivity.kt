@@ -39,6 +39,7 @@ import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterAlt
@@ -73,22 +74,21 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             VideoPlayerComposeTheme {
-                VideoPlayerContent()
+                Surface{
+                    VideoPlayerContent()
+                }
             }
         }
     }
 
+    @Deprecated("Deprecated in Java")
     override fun enterPictureInPictureMode() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val aspectRatio = Rational(16, 9)
-            val pipParams = PictureInPictureParams.Builder()
-                .setAspectRatio(aspectRatio)
-                .setActions(listOf(createPreviousAction(), createNextAction()))
-                .build()
-            enterPictureInPictureMode(pipParams)
-        } else {
-            Toast.makeText(this, "PiP modu desteklenmiyor", Toast.LENGTH_SHORT).show()
-        }
+        val aspectRatio = Rational(16, 9)
+        val pipParams = PictureInPictureParams.Builder()
+            .setAspectRatio(aspectRatio)
+            .setActions(listOf(createPreviousAction(), createNextAction()))
+            .build()
+        enterPictureInPictureMode(pipParams)
     }
 
     private fun createPreviousAction(): RemoteAction {
