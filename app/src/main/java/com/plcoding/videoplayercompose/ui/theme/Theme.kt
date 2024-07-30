@@ -5,7 +5,9 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.Color
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 private val DarkColorPalette = darkColors(
     primary = Purple200,
@@ -42,6 +44,12 @@ fun VideoPlayerComposeTheme(
         DarkColorPalette
     } else {
         LightColorPalette
+    }
+
+    val systemUiController = rememberSystemUiController()
+    val statusBarColor = if (darkTheme) Color.Black else Color.White
+    LaunchedEffect(Unit) {
+        systemUiController.setSystemBarsColor(color = statusBarColor)
     }
 
     MaterialTheme(
