@@ -11,7 +11,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Rational
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -74,7 +73,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             VideoPlayerComposeTheme {
-                Surface{
+                Surface {
                     VideoPlayerContent()
                 }
             }
@@ -86,7 +85,7 @@ class MainActivity : ComponentActivity() {
         val aspectRatio = Rational(16, 9)
         val pipParams = PictureInPictureParams.Builder()
             .setAspectRatio(aspectRatio)
-            .setActions(listOf(createPreviousAction(), createNextAction()))
+            .setActions(listOf(createPreviousAction(), createPlayAction(), createNextAction()))
             .build()
         enterPictureInPictureMode(pipParams)
     }
@@ -100,8 +99,23 @@ class MainActivity : ComponentActivity() {
         )
         return RemoteAction(
             Icon.createWithResource(this, android.R.drawable.ic_media_previous),
-            "Önceki",
-            "Önceki",
+            "Previous",
+            "Previous",
+            intent
+        )
+    }
+
+    private fun createPlayAction(): RemoteAction {
+        val intent = PendingIntent.getBroadcast(
+            this,
+            0,
+            Intent(ACTION_PLAY),
+            PendingIntent.FLAG_IMMUTABLE
+        )
+        return RemoteAction(
+            Icon.createWithResource(this, android.R.drawable.ic_media_play),
+            "Play",
+            "Play",
             intent
         )
     }
@@ -115,8 +129,8 @@ class MainActivity : ComponentActivity() {
         )
         return RemoteAction(
             Icon.createWithResource(this, android.R.drawable.ic_media_next),
-            "Sonraki",
-            "Sonraki",
+            "Next",
+            "Next",
             intent
         )
     }
@@ -135,6 +149,7 @@ class MainActivity : ComponentActivity() {
 
     companion object {
         const val ACTION_PREVIOUS = "com.plcoding.videoplayercompose.ACTION_PREVIOUS"
+        const val ACTION_PLAY = "com.plcoding.videoplayercompose.ACTION_PLAY"
         const val ACTION_NEXT = "com.plcoding.videoplayercompose.ACTION_NEXT"
     }
 }
