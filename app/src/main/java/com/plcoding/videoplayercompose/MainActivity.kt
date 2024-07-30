@@ -296,7 +296,7 @@ fun VideoListItem(item: VideoItem, onVideoClick: () -> Unit) {
     ) {
         item.thumbnailUri?.let { thumbnailUri ->
             Card(
-                border = BorderStroke(0.8.dp, Color.White)
+                border = BorderStroke(0.8.dp, Color.Transparent)
             ) {
                 Box(
                     modifier = Modifier
