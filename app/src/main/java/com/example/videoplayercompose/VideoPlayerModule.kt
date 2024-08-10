@@ -4,8 +4,6 @@ import android.app.Application
 import android.content.ContentResolver
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
-import com.example.videoplayercompose.MetaDataReader
-import com.example.videoplayercompose.MetaDataReaderImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
