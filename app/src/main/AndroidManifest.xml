@@ -22,8 +22,6 @@
         tools:targetApi="31">
         <activity
             android:name=".MainActivity"
-            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|keyboard|keyboardHidden|navigation"
-            android:supportsPictureInPicture="true"
             android:exported="true"
             android:theme="@style/Theme.VideoPlayerCompose">
             <intent-filter>
@@ -35,4 +33,5 @@
                 android:value="" />
         </activity>
     </application>
+
 </manifest>

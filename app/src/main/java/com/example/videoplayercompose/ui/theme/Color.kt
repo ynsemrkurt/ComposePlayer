@@ -1,4 +1,4 @@
-package com.plcoding.videoplayercompose.ui.theme
+package com.example.videoplayercompose.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

@@ -1,4 +1,4 @@
-package com.plcoding.videoplayercompose
+package com.example.videoplayercompose
 
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp

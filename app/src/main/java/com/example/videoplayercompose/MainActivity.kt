@@ -1,23 +1,13 @@
-package com.plcoding.videoplayercompose
+package com.example.videoplayercompose
 
 import android.Manifest
-import android.app.PendingIntent
-import android.app.PictureInPictureParams
-import android.app.RemoteAction
-import android.content.Intent
-import android.content.IntentFilter
-import android.content.res.Configuration
-import android.graphics.drawable.Icon
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.util.Rational
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -36,16 +26,16 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Card
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -59,7 +49,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -67,8 +56,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.media3.ui.PlayerView
 import coil.compose.rememberAsyncImagePainter
-import com.plcoding.videoplayercompose.ui.theme.VideoPlayerComposeTheme
+import com.example.videoplayercompose.ui.theme.VideoPlayerComposeTheme
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.Locale
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -81,104 +71,9 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-
-        // BroadcastReceiver Kaydı
-        val filter = IntentFilter().apply {
-            addAction(ACTION_PREVIOUS)
-            addAction(ACTION_PLAY)
-            addAction(ACTION_NEXT)
-        }
-        registerReceiver(PIPActionReceiver(), filter)
-    }
-
-    val viewModel: MainViewModel by viewModels()
-
-    @Deprecated("Deprecated in Java")
-    override fun enterPictureInPictureMode() {
-        val aspectRatio = Rational(16, 9)
-        val pipParams = PictureInPictureParams.Builder()
-            .setAspectRatio(aspectRatio)
-            .setActions(listOf(createPreviousAction(), createPlayAction(), createNextAction()))
-            .build()
-        enterPictureInPictureMode(pipParams)
-    }
-
-    private fun createPreviousAction(): RemoteAction {
-        val intent = PendingIntent.getBroadcast(
-            this,
-            0,
-            Intent(ACTION_PREVIOUS),
-            PendingIntent.FLAG_IMMUTABLE
-        )
-        return RemoteAction(
-            Icon.createWithResource(this, android.R.drawable.ic_media_previous),
-            "Previous",
-            "Previous",
-            intent
-        )
-    }
-
-    private fun createPlayAction(): RemoteAction {
-        val intent = PendingIntent.getBroadcast(
-            this,
-            1,
-            Intent(ACTION_PLAY),
-            PendingIntent.FLAG_IMMUTABLE
-        )
-        return RemoteAction(
-            Icon.createWithResource(this, android.R.drawable.ic_media_play),
-            "Play",
-            "Play",
-            intent
-        )
-    }
-
-    private fun createNextAction(): RemoteAction {
-        val intent = PendingIntent.getBroadcast(
-            this,
-            2,
-            Intent(ACTION_NEXT),
-            PendingIntent.FLAG_IMMUTABLE
-        )
-        return RemoteAction(
-            Icon.createWithResource(this, android.R.drawable.ic_media_next),
-            "Next",
-            "Next",
-            intent
-        )
-    }
-
-    override fun onNewIntent(intent: Intent?) {
-        super.onNewIntent(intent)
-        intent?.let {
-            when (it.action) {
-                ACTION_PREVIOUS -> Toast.makeText(this, "Previous", Toast.LENGTH_SHORT).show()
-                ACTION_PLAY -> viewModel.player.play()
-                ACTION_NEXT -> Toast.makeText(this, "Next", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    override fun onUserLeaveHint() {
-        super.onUserLeaveHint()
-        enterPictureInPictureMode()
-    }
-
-    override fun onPictureInPictureModeChanged(
-        isInPictureInPictureMode: Boolean,
-        newConfig: Configuration?
-    ) {
-        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
-    }
-
-    companion object {
-        const val ACTION_PREVIOUS = "com.plcoding.videoplayercompose.ACTION_PREVIOUS"
-        const val ACTION_PLAY = "com.plcoding.videoplayercompose.ACTION_PLAY"
-        const val ACTION_NEXT = "com.plcoding.videoplayercompose.ACTION_NEXT"
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun VideoPlayerContent() {
     val viewModel: MainViewModel = hiltViewModel()
@@ -398,13 +293,13 @@ fun DropDownFilter(viewModel: MainViewModel) {
             )
 
             filters.forEach { (filterKey, filterLabel) ->
-                DropdownMenuItem(onClick = {
-                    selectedFilter = filterKey
-                    viewModel.loadAllVideos(filterKey)
-                    expanded = false
-                }) {
-                    Text(text = filterLabel)
-                }
+                DropdownMenuItem(
+                    text = { Text(text = filterLabel) },
+                    onClick = {
+                        selectedFilter = filterKey
+                        viewModel.loadAllVideos(filterKey)
+                        expanded = false
+                    })
             }
         }
     }
@@ -413,5 +308,5 @@ fun DropDownFilter(viewModel: MainViewModel) {
 fun formatDuration(durationMillis: Long): String {
     val minutes = (durationMillis / 1000 / 60).toInt()
     val seconds = (durationMillis / 1000 % 60).toInt()
-    return String.format("%02d:%02d", minutes, seconds)
+    return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
 }

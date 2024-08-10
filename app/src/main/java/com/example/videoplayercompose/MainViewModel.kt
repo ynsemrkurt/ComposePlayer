@@ -1,4 +1,4 @@
-package com.plcoding.videoplayercompose
+package com.example.videoplayercompose
 
 import android.app.Application
 import android.content.ContentResolver
@@ -156,8 +156,8 @@ class MainViewModel @Inject constructor(
         }
 
     // Küçük resmi yükle fonksiyonu
-    private fun loadThumbnail(uri: Uri): String? {
-        return try {
+    private suspend fun loadThumbnail(uri: Uri): String? = withContext(Dispatchers.IO) {
+         try {
             val size = Size(200, 200)
             val bitmap: Bitmap = contentResolver.loadThumbnail(uri, size, null)
             val cacheDir = getApplication<Application>().cacheDir
