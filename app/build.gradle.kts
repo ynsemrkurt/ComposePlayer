@@ -59,17 +59,28 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    // Hilt
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
-    implementation (libs.androidx.material.icons.extended)
-    implementation (libs.androidx.lifecycle.viewmodel.compose)
-    implementation (libs.androidx.media3.exoplayer)
-    implementation (libs.androidx.media3.ui)
-    implementation(libs.coil.compose)
     kapt (libs.androidx.hilt.compiler)
     implementation (libs.androidx.hilt.navigation.compose)
-    implementation ("com.google.accompanist:accompanist-systemuicontroller:0.34.0")
-    implementation (libs.material)
+
+    // Material Icons
+    implementation (libs.androidx.material.icons.extended)
+
+    // Media3
+    implementation (libs.androidx.media3.exoplayer)
+    implementation (libs.androidx.media3.ui)
+
+    // Coil
+    implementation(libs.coil.compose)
+
+    // Accompanist
+    implementation (libs.accompanist.systemuicontroller)
+
+    // Lifecycle
+    implementation (libs.androidx.lifecycle.viewmodel.compose)
 }
 
 kapt {

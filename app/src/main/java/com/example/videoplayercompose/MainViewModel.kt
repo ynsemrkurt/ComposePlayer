@@ -158,12 +158,12 @@ class MainViewModel @Inject constructor(
     // Küçük resmi yükle fonksiyonu
     private suspend fun loadThumbnail(uri: Uri): String? = withContext(Dispatchers.IO) {
          try {
-            val size = Size(200, 200)
+            val size = Size(1, 1)
             val bitmap: Bitmap = contentResolver.loadThumbnail(uri, size, null)
             val cacheDir = getApplication<Application>().cacheDir
             val tempFile = File.createTempFile("thumb_", ".jpg", cacheDir)
             FileOutputStream(tempFile).use { out ->
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 50, out)
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 1, out)
             }
             Uri.fromFile(tempFile).toString()
         } catch (e: Exception) {
