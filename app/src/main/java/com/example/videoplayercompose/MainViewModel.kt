@@ -50,6 +50,13 @@ class MainViewModel @Inject constructor(
     private val _currentContentUri = MutableStateFlow<Uri?>(null)
     val currentContentUri: StateFlow<Uri?> = _currentContentUri
 
+    private val _isFullscreen = MutableStateFlow(false)
+    val isFullscreen: StateFlow<Boolean> = _isFullscreen
+
+    fun toggleFullscreen() {
+        _isFullscreen.value = !_isFullscreen.value
+    }
+
     // Video öğelerini URI'lerden oluşturur
     val videoItems = videoUris.map { uris ->
         uris.map { uri ->
@@ -155,21 +162,30 @@ class MainViewModel @Inject constructor(
             videos
         }
 
-    // Küçük resmi yükle fonksiyonu
     private suspend fun loadThumbnail(uri: Uri): String? = withContext(Dispatchers.IO) {
          try {
-            val size = Size(1, 1)
+            val size = Size(250, 250)
             val bitmap: Bitmap = contentResolver.loadThumbnail(uri, size, null)
             val cacheDir = getApplication<Application>().cacheDir
             val tempFile = File.createTempFile("thumb_", ".jpg", cacheDir)
             FileOutputStream(tempFile).use { out ->
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 1, out)
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
             }
             Uri.fromFile(tempFile).toString()
         } catch (e: Exception) {
             e.printStackTrace()
             null
         }
+    }
+
+    fun getVideoOrientation(uri: Uri): String {
+        val retriever = MediaMetadataRetriever()
+        retriever.setDataSource(getApplication(), uri)
+        val width = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toInt() ?: 0
+        val height = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toInt() ?: 0
+        retriever.release()
+
+        return if (width > height) "landscape" else "portrait"
     }
 
     private fun getVideoDuration(context: Context, videoUri: Uri): Long {
