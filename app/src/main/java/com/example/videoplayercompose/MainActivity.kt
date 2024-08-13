@@ -1,6 +1,8 @@
 package com.example.videoplayercompose
 
 import android.Manifest
+import android.app.Activity
+import android.content.pm.ActivityInfo
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -28,6 +30,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterAlt
+import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
@@ -48,6 +51,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -81,6 +85,7 @@ fun VideoPlayerContent() {
     val currentVideoThumbnail by viewModel.currentVideoThumbnail.collectAsState()
     val isPlaying by viewModel.isPlaying.collectAsState()
     val currentContentUri by viewModel.currentContentUri.collectAsState()
+    val isFullscreen by viewModel.isFullscreen.collectAsState()
 
     val requestPermissions = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
@@ -99,6 +104,22 @@ fun VideoPlayerContent() {
                 arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
             }
         )
+    }
+
+    val current = LocalContext.current
+
+    LaunchedEffect(isFullscreen) {
+        if (isFullscreen) {
+            val orientation = currentContentUri?.let {
+                viewModel.getVideoOrientation(it)
+            } ?: "portrait"
+            (current as? Activity)?.requestedOrientation =
+                if (orientation == "landscape") ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                else ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        } else {
+            (current as? Activity)?.requestedOrientation =
+                ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        }
     }
 
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -123,7 +144,8 @@ fun VideoPlayerContent() {
             lifecycle = lifecycle,
             thumbnailUri = currentVideoThumbnail,
             isPlaying = isPlaying,
-            contentUri = currentContentUri
+            contentUri = currentContentUri,
+            isFullscreen = isFullscreen
         )
 
         Row(
@@ -143,6 +165,31 @@ fun VideoPlayerContent() {
 
         VideoList(videoItems = videoItems, viewModel = viewModel)
     }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        contentAlignment = Alignment.BottomEnd
+    ) {
+        Box(
+            modifier = Modifier
+                .size(64.dp)
+                .background(Color.Blue, shape = CircleShape)
+                .clickable {
+                    viewModel.toggleFullscreen()
+                }
+        ) {
+            Icon(
+                imageVector = Icons.Default.Fullscreen,
+                contentDescription = "Toggle Fullscreen",
+                tint = Color.White,
+                modifier = Modifier
+                    .size(32.dp)
+                    .align(Alignment.Center)
+            )
+        }
+    }
 }
 
 @Composable
@@ -151,12 +198,16 @@ fun PlayerViewContainer(
     lifecycle: Lifecycle.Event,
     thumbnailUri: String?,
     isPlaying: Boolean,
-    contentUri: Uri?
+    contentUri: Uri?,
+    isFullscreen: Boolean
 ) {
     Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(16 / 9f)
+            .then(
+                if (isFullscreen) Modifier.fillMaxSize() else Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(16 / 9f)
+            )
     ) {
         AndroidView(
             factory = { context ->
